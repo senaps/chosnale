@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -7,7 +8,7 @@ from sqlalchemy import desc
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('db_uri')
 db = SQLAlchemy(app)
 db.create_all()
 order_types = ['featured', 'votes', 'pub_date']
