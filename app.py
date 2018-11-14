@@ -32,7 +32,6 @@ def get_chosnale():
     chosnale_order = data.get('order')
     status_code = 200
     chosnale_list = Chosnale.query.filter()  #query_all
-    print(chosnale_list)
     if chosnale_list:
         if chosnale_order and chosnale_order in order_types:  # order_by
             order = get_chosnale(Chosnale, chosnale_order)
@@ -45,6 +44,7 @@ def get_chosnale():
         results_list = list()
         for chosnale in chosnale_list.items:
             obj = dict()
+            obj['id'] = chosnale.id
             obj['text'] = chosnale.text
             obj['pub_date'] = chosnale.pub_date
             obj['featured'] = chosnale.featured
@@ -76,3 +76,24 @@ def add_chosnale():
         response = {"result": "chosnale saved successfully"}
         status_code = 200
     return jsonify(response), status_code
+
+
+@app.route("/vote/<int:id>/")
+def vote(id=None):
+    if id is None:
+        response = {"result": "id should be a valid integer"}
+        status_code = 300
+    else:
+        chosnale = Chosnale.query.filter_by(id=id).first()
+        if chosnale:
+            chosnale.votes += 1
+            db.session.commit()
+            response = {"result": "successfully voted up!"}
+            status_code = 200
+        else:
+            response = {"result": "didn't find this chosnale"}
+            status_code = 201
+    return jsonify(response), status_code
+
+if __name__ == '__main__':
+    app.run()
