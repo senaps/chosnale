@@ -29,9 +29,9 @@ class Chosnale(db.Model):
     votes = db.Column(db.Integer, default=0)
 
 
-@app.route("/get_chosnale/", methods=['POST'])
+@app.route("/get_chosnale/", methods=['GET','POST'])
 def get_chosnale():
-    data = request.get_json()
+    data = request.get_json() or {}
     page = data.get('page', 1)
     per_page = data.get('per_page', 10)
     chosnale_order = data.get('order')
