@@ -1,14 +1,18 @@
 import datetime
 import os
-
+from urllib.parse import quote
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy import desc
 
-
+username = quote(os.environ.get('username', 'root'), safe='')
+password = quote(os.environ.get('password', ''), safe='')
+database = os.environ.get('database', 'localhost')
+db_name = os.environ.get('db_name', 'chosnale')
+db_uri = f"mysql+pymysql://{username}:{password}@{database}/{db_name}"
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('db_uri')
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db = SQLAlchemy(app)
 db.create_all()
 order_types = ['featured', 'votes', 'pub_date']
