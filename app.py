@@ -6,16 +6,23 @@ from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy import desc
 
+# we will read the database_uri elements from os environment_variables and
+# initiate a db_uri. this is being used to connect and add the data to the db.
+# quote() is used to escape special charachters form `username` and `password`
+
 username = quote(os.environ.get('username', 'root'), safe='')
 password = quote(os.environ.get('password', ''), safe='')
 database = os.environ.get('database', 'localhost')
 db_name = os.environ.get('db_name', 'chosnale')
 db_uri = f"mysql+pymysql://{username}:{password}@{database}/{db_name}"
+
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db = SQLAlchemy(app)
 db.create_all()
-order_types = ['featured', 'votes', 'pub_date']
+
+order_types = ['featured', 'votes', 'pub_date']  # order_by strings we accept
 
 
 class Chosnale(db.Model):
@@ -31,6 +38,16 @@ class Chosnale(db.Model):
 
 @app.route("/get_chosnale/", methods=['GET','POST'])
 def get_chosnale():
+    """download chosnales from the db
+
+    this function will receive some options such as `sorting value` or chosnale
+    per page and will generate the result accordingly.
+    we will use the pagination functionality of `sqlalchemy` to reduce the
+    load on the db and amount the data we want to show.
+
+    the only way to customize the data that is being received, one would need
+    to send over a `POST` request.
+    """
     data = request.get_json() or {}
     page = data.get('page', 1)
     per_page = data.get('per_page', 10)
@@ -69,6 +86,12 @@ def get_chosnale():
 
 @app.route("/add_chosnale/", methods=['POST'])
 def add_chosnale():
+    """add a new chosnale
+
+    this function will receive some text with at-most `240` charachters and
+    will save it to the database, no actions performed on it.
+
+    """
     data = request.get_json()
     chosnale_str = data.get('chosnale')
     if len(chosnale_str) > 240:
@@ -85,6 +108,15 @@ def add_chosnale():
 
 @app.route("/vote/<int:id>/")
 def vote(id=None):
+    """cast a vote on a chosnale
+
+    this function will check if a chosnale with provided `id` is present, and
+    will add `1` votes to it's votes count. currently it wont do anything, but
+    later on, we can manage to send featured chosnale's(ones with most votes) to
+    twitter!
+
+    :param id: the id of the chosnale we want to cast our vote for! :)
+    """
     if id is None:
         response = {"result": "id should be a valid integer"}
         status_code = 300
