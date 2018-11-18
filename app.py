@@ -20,9 +20,11 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db = SQLAlchemy(app)
-db.create_all()
 
 order_types = ['featured', 'votes', 'pub_date']  # order_by strings we accept
+
+def get_order(obj, order):
+    return getattr(obj, order)
 
 
 class Chosnale(db.Model):
@@ -36,8 +38,11 @@ class Chosnale(db.Model):
     votes = db.Column(db.Integer, default=0)
 
 
-@app.route("/get_chosnale/", methods=['GET','POST'])
-def get_chosnale():
+@app.route("/chosnale/", methods=['GET'])
+@app.route("/chosnale/<int:page>/", methods=['GET'])
+@app.route("/chosnale/<int:page>/<int:per_page>/", methods=['GET'])
+@app.route("/chosnale/<int:page>/<int:per_page>/<order>/", methods=['GET'])
+def get_chosnale(page=1, per_page=10, order="pub_date"):
     """download chosnales from the db
 
     this function will receive some options such as `sorting value` or chosnale
@@ -48,15 +53,11 @@ def get_chosnale():
     the only way to customize the data that is being received, one would need
     to send over a `POST` request.
     """
-    data = request.get_json() or {}
-    page = data.get('page', 1)
-    per_page = data.get('per_page', 10)
-    chosnale_order = data.get('order')
     status_code = 200
     chosnale_list = Chosnale.query.filter()  #query_all
     if chosnale_list:
-        if chosnale_order and chosnale_order in order_types:  # order_by
-            order = get_chosnale(Chosnale, chosnale_order)
+        if order and order in order_types:  # order_by
+            order = get_order(Chosnale, order)
             chosnale_list = chosnale_list.order_by(desc(order))
         else:
             chosnale_list = chosnale_list.order_by(desc(Chosnale.pub_date))
@@ -79,12 +80,11 @@ def get_chosnale():
             }}
         status_code = 200
     else:
-        status_code = 201
+        status_code = 204
         response = {"result": "no data in the db!"}
     return jsonify(response), status_code
 
-
-@app.route("/add_chosnale/", methods=['POST'])
+@app.route("/chosnale/", methods=['POST'])
 def add_chosnale():
     """add a new chosnale
 
@@ -94,19 +94,23 @@ def add_chosnale():
     """
     data = request.get_json()
     chosnale_str = data.get('chosnale')
-    if len(chosnale_str) > 240:
-        response = {"result": "your chosnale should be 240 chars long"}
-        status_code = 201
+    if chosnale_str:
+        if len(chosnale_str) > 240:
+            response = {"result": "your chosnale should be 240 chars long"}
+            status_code = 203
+        else:
+            chosnale = Chosnale(text=chosnale_str)
+            db.session.add(chosnale)
+            db.session.commit()
+            response = {"result": "chosnale saved successfully"}
+            status_code = 201
     else:
-        chosnale = Chosnale(text=chosnale_str)
-        db.session.add(chosnale)
-        db.session.commit()
-        response = {"result": "chosnale saved successfully"}
-        status_code = 200
+        response = {"result": "you should provide a `chosnale` field."}
+        status_code = 400
     return jsonify(response), status_code
 
 
-@app.route("/vote/<int:id>/")
+@app.route("/chosnale/vote/<int:id>/")
 def vote(id=None):
     """cast a vote on a chosnale
 
@@ -119,18 +123,18 @@ def vote(id=None):
     """
     if id is None:
         response = {"result": "id should be a valid integer"}
-        status_code = 300
+        status_code = 400
     else:
         chosnale = Chosnale.query.filter_by(id=id).first()
         if chosnale:
             chosnale.votes += 1
             db.session.commit()
             response = {"result": "successfully voted up!"}
-            status_code = 200
+            status_code = 201
         else:
             response = {"result": "didn't find this chosnale"}
-            status_code = 201
+            status_code = 203
     return jsonify(response), status_code
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
