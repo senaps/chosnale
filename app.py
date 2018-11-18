@@ -38,6 +38,7 @@ class Chosnale(db.Model):
     votes = db.Column(db.Integer, default=0)
 
 
+@app.route("/")
 @app.route("/chosnale/", methods=['GET'])
 @app.route("/chosnale/<int:page>/", methods=['GET'])
 @app.route("/chosnale/<int:page>/<int:per_page>/", methods=['GET'])
@@ -62,7 +63,7 @@ def get_chosnale(page=1, per_page=10, order="pub_date"):
         else:
             chosnale_list = chosnale_list.order_by(desc(Chosnale.pub_date))
         chosnale_list = chosnale_list.paginate(page=page,
-                                               per_page=per_page
+                                               per_page=per_page,
                                                )
         results_list = list()
         for chosnale in chosnale_list.items:
