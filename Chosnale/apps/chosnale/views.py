@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from sqlalchemy import desc
 
 from Chosnale.apps.chosnale import chosnale
-
+from Chosnale.extensions import db
 from .models import Chosnale
 from .utils import get_order, order_types
 
@@ -27,33 +27,30 @@ def get_chosnale():
     order = data.get('order', 'pub_date')
     status_code = 200
     chosnale_list = Chosnale.query.filter()  #query_all
-    if chosnale_list:
-        if order and order in order_types:  # order_by
-            order = get_order(Chosnale, order)
-            chosnale_list = chosnale_list.order_by(desc(order))
-        else:
-            chosnale_list = chosnale_list.order_by(desc(Chosnale.pub_date))
-        chosnale_list = chosnale_list.paginate(page=page,
-                                               per_page=per_page,
-                                               )
-        results_list = list()
-        for chosnale in chosnale_list.items:
-            obj = dict()
-            obj['id'] = chosnale.id
-            obj['text'] = chosnale.text
-            obj['pub_date'] = chosnale.pub_date
-            obj['featured'] = chosnale.featured
-            obj['votes'] = chosnale.votes
-            results_list.append(obj)
-        response = {"result": {
-            "data": results_list,
-            "page": page,
-            "per_page": per_page,
-            }}
-        status_code = 200
+    if order and order in order_types:  # order_by
+        order = get_order(Chosnale, order)
+        chosnale_list = chosnale_list.order_by(desc(order))
     else:
-        status_code = 204
-        response = {"result": "no data in the db!"}
+        chosnale_list = chosnale_list.order_by(desc(Chosnale.pub_date))
+    chosnale_list = chosnale_list.paginate(page=int(page),
+                                           per_page=int(per_page),
+                                           error_out=False
+                                           )
+    results_list = list()
+    for chosnale in chosnale_list.items:
+        obj = dict()
+        obj['id'] = chosnale.id
+        obj['text'] = chosnale.text
+        obj['pub_date'] = chosnale.pub_date
+        obj['featured'] = chosnale.featured
+        obj['votes'] = chosnale.votes
+        results_list.append(obj)
+    response = {"result": {
+        "data": results_list,
+        "page": page,
+        "per_page": per_page,
+        }}
+    status_code = 200
     return jsonify(response), status_code
 
 
@@ -70,7 +67,10 @@ def add_chosnale():
     if chosnale_str:
         if len(chosnale_str) > 240:
             response = {"result": "your chosnale should be 240 chars long"}
-            status_code = 203
+            status_code = 400
+        elif len(chosnale_str) < 15:
+            response = {"result": "your chosnale should be atleast 15 chars long"}
+            status_code = 400
         else:
             chosnale = Chosnale(text=chosnale_str)
             db.session.add(chosnale)
