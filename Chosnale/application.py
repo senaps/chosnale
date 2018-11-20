@@ -14,7 +14,6 @@ def create_app(**kwargs):
 
 
 def load_configs(app, **kwargs):
-    db_uri = kwargs['db_uri']
     app.config['SQLALCHEMY_DATABASE_URI'] = kwargs.get('db_uri')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     if 'testing' in kwargs.keys():

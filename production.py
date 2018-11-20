@@ -1,7 +1,7 @@
 from Chosnale.application import create_app
-from Chosnale.config import db_uri
+from Chosnale.config import PRODUCTION_DB_URI
 
-app = create_app(db_uri=db_uri)
+app = create_app(db_uri=PRODUCTION_DB_URI)
 
 if __name__ == '__main__':
     app.run()

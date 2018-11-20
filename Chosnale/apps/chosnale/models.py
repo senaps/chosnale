@@ -4,7 +4,7 @@ from Chosnale.extensions import db
 
 
 class Chosnale(db.Model):
-    __tablename__="chosnales"
+    __tablename__ = "chosnales"
 
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(240))
@@ -12,4 +12,3 @@ class Chosnale(db.Model):
                          default=datetime.datetime.utcnow)
     featured = db.Column(db.Boolean, default=False)
     votes = db.Column(db.Integer, default=0)
-

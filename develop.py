@@ -1,7 +1,7 @@
 from Chosnale.application import create_app
-from Chosnale.config import test_db_uri
+from Chosnale.config import TEST_DB_URI
 
-app = create_app(db_uri=test_db_uri)
+app = create_app(db_uri=TEST_DB_URI)
 
 
 if __name__ == '__main__':

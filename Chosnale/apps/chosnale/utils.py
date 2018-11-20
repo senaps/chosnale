@@ -4,4 +4,3 @@ order_types = ['featured', 'votes', 'pub_date']
 
 def get_order(obj, order):
     return getattr(obj, order)
-
