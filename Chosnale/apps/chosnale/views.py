@@ -26,7 +26,7 @@ def get_chosnale():
     per_page = data.get('per_page', 10)
     order = data.get('order', 'pub_date')
     status_code = 200
-    chosnale_list = Chosnale.query.filter()  #query_all
+    chosnale_list = Chosnale.query.filter()  # query_all
     if order and order in order_types:  # order_by
         order = get_order(Chosnale, order)
         chosnale_list = chosnale_list.order_by(desc(order))
@@ -69,7 +69,8 @@ def add_chosnale():
             response = {"result": "your chosnale should be 240 chars long"}
             status_code = 400
         elif len(chosnale_str) < 15:
-            response = {"result": "your chosnale should be atleast 15 chars long"}
+            response = {"result":
+                        "your chosnale should be atleast 15 chars long"}
             status_code = 400
         else:
             chosnale = Chosnale(text=chosnale_str)
@@ -89,8 +90,8 @@ def vote(id=None):
 
     this function will check if a chosnale with provided `id` is present, and
     will add `1` votes to it's votes count. currently it wont do anything, but
-    later on, we can manage to send featured chosnale's(ones with most votes) to
-    twitter!
+    later on, we can manage to send featured chosnale's(ones with most votes) 
+    to twitter!
 
     :param id: the id of the chosnale we want to cast our vote for! :)
     """
